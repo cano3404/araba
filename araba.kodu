@@ -1,0 +1,157 @@
+#include <Enrf24.h>
+#include <nRF24L01.h>
+#include <string.h>
+#include <Servo.h>
+Servo servo;
+Enrf24 nRF(9, 10, 5);  // CE , CSN/CS/SS , IRQ pinleri
+
+const byte alici_adresi[] = { 0xDE, 0xAD, 0xBE, 0x0F, 0x01 };
+
+int hiz = 120;
+int far = 8;
+
+int ea = 2;
+int eb = 3;
+
+int motor1 = 24;
+int motor2 = 26;
+int motor3 = 28;
+int motor4 = 30;
+int motor5 = 32;
+int motor6 = 34;
+int motor7 = 36;
+int motor8 = 38;
+
+int yonVeri = 0;
+
+void setup()
+{
+  pinMode(far, OUTPUT);
+  Serial.begin(9600);
+
+  pinMode(motor1, OUTPUT);
+  pinMode(motor2, OUTPUT);
+  pinMode(motor3, OUTPUT);
+  pinMode(motor4, OUTPUT);
+  pinMode(motor5, OUTPUT);
+  pinMode(motor6, OUTPUT);
+  pinMode(motor7, OUTPUT);
+  pinMode(motor8, OUTPUT);
+
+  pinMode(ea, OUTPUT);
+  pinMode(eb, OUTPUT);
+  analogWrite(ea, hiz);
+  analogWrite(eb, hiz);
+
+  SPI.begin();
+  SPI.setDataMode(SPI_MODE0);
+  SPI.setBitOrder(MSBFIRST);
+
+  nRF.begin(1000000, 124);
+  nRF.setRXaddress(alici_adresi);
+  nRF.enableRX();
+}
+
+void loop() {
+  char gelen[33];
+  if (nRF.read(gelen))
+  {
+    String veri = String(gelen);
+    yonVeri = veri.substring(0, 1).toInt();
+    hiz = veri.substring(1, 4).toInt();
+    okumaYap();
+
+  }
+
+  else if (Serial.available())
+  {
+    String veri = Serial.readString();
+    yonVeri = veri.substring(0, 1).toInt();
+    hiz = veri.substring(1, 4).toInt();
+    okumaYap();
+  }
+
+
+}
+
+
+void okumaYap()
+{
+  //  Serial.println(alinan_bilgi);
+
+  //  int hizVeri = alinan_bilgi.parseInt();
+  // int farVeri = alinan_bilgi.parseInt();
+  // int kornaVeri = alinan_bilgi.parseInt();
+  analogWrite(ea, hiz);
+  analogWrite(eb, hiz);
+
+  Serial.println(String(hiz));
+
+  switch (yonVeri)
+  {
+    case 0: dur(); break;
+    case 1: ileri(); break;
+    case 2: geri(); break;
+    case 3: sol(); break;
+    case 4: sag(); break;
+  }
+
+}
+
+void ileri() {
+  Serial.println("ileri");
+  digitalWrite(motor1, HIGH);
+  digitalWrite(motor2, LOW);
+  digitalWrite(motor3, HIGH);
+  digitalWrite(motor4, LOW);
+  digitalWrite(motor6, HIGH);
+  digitalWrite(motor5, LOW);
+  digitalWrite(motor7, HIGH);
+  digitalWrite(motor8, LOW);
+
+}
+void sag() {
+  Serial.println("sag");
+  digitalWrite(motor1, HIGH);
+  digitalWrite(motor2, LOW);
+  digitalWrite(motor4, HIGH);
+  digitalWrite(motor3, LOW);
+  digitalWrite(motor5, HIGH);
+  digitalWrite(motor6, LOW);
+  digitalWrite(motor7, HIGH);
+  digitalWrite(motor8, LOW);
+
+}
+void sol() {
+  Serial.println("sol");
+  digitalWrite(motor2, HIGH);
+  digitalWrite(motor1, LOW);
+  digitalWrite(motor3, HIGH);
+  digitalWrite(motor4, LOW);
+  digitalWrite(motor6, HIGH);
+  digitalWrite(motor5, LOW);
+  digitalWrite(motor8, HIGH);
+  digitalWrite(motor7, LOW);
+}
+void geri() {
+  Serial.println("geri");
+  digitalWrite(motor2, HIGH);
+  digitalWrite(motor1, LOW);
+  digitalWrite(motor4, HIGH);
+  digitalWrite(motor3, LOW);
+  digitalWrite(motor5, HIGH);
+  digitalWrite(motor6, LOW);
+  digitalWrite(motor8, HIGH);
+  digitalWrite(motor7, LOW);
+
+}
+void dur() {
+  digitalWrite(motor1, LOW);
+  digitalWrite(motor2, LOW);
+  digitalWrite(motor3, LOW);
+  digitalWrite(motor4, LOW);
+  digitalWrite(motor5, LOW);
+  digitalWrite(motor6, LOW);
+  digitalWrite(motor7, LOW);
+  digitalWrite(motor8, LOW);
+}
